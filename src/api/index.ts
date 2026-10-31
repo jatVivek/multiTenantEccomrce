@@ -28,6 +28,7 @@ app.use("/api/tenant/orders", rateLimiter({ windowMs: 5 * 60 * 1000, max: 30, me
 // ── Static Asset Serving ───────────────────────────────────────────────
 app.use("/css/*", serveStatic({ root: "./public" }));
 app.use("/js/*", serveStatic({ root: "./public" }));
+app.use("/uploads/*", serveStatic({ root: "./public" }));
 
 // ── Frontend HTML Views ────────────────────────────────────────────────
 app.get("/store/:slug", serveStatic({ path: "./public/store.html" }));
