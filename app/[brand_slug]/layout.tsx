@@ -10,6 +10,8 @@ import { getPlatformSetting } from "@/lib/db/queries/platform";
 import { getEffectiveBrandFeatures } from "@/lib/platform/feature-gate";
 import { getCurrentCustomer } from "@/app/[brand_slug]/account/actions";
 
+export const dynamic = "force-dynamic";
+
 interface BrandLayoutProps {
   children: React.ReactNode;
   params: Promise<{ brand_slug: string }>;

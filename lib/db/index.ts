@@ -8,11 +8,9 @@ declare global {
   var __clothing_db_pool: Pool | undefined;
 }
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
-}
+const connectionString =
+  process.env.DATABASE_URL ||
+  "postgres://postgres:postgres@127.0.0.1:5432/clothing_setup";
 
 const pool =
   global.__clothing_db_pool ||
@@ -20,6 +18,7 @@ const pool =
     connectionString,
     max: 20,
     idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 5_000,
   });
 
 if (process.env.NODE_ENV !== "production") {
