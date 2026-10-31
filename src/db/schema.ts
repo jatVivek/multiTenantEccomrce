@@ -137,6 +137,19 @@ export const adminBrandAccess = pgTable(
   (t) => [primaryKey({ columns: [t.adminUserId, t.brandId] })]
 );
 
+export const discountCoupons = pgTable("discount_coupons", {
+  id: uuid().defaultRandom().primaryKey(),
+  brandId: uuid("brand_id").notNull().references(() => brands.id, { onDelete: "cascade" }),
+  code: varchar({ length: 50 }).notNull(),
+  discountType: varchar("discount_type", { length: 20 }).notNull(), // 'PERCENTAGE' or 'FLAT'
+  discountValue: integer("discount_value").notNull(), // e.g. 10 (%) or 10000 (paise)
+  minOrderPaise: integer("min_order_paise").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .defaultNow()
+    .notNull(),
+});
+
 // ── Type Exports ───────────────────────────────────────────────────────
 export type Brand = typeof brands.$inferSelect;
 export type NewBrand = typeof brands.$inferInsert;
@@ -148,3 +161,4 @@ export type Order = typeof orders.$inferSelect;
 export type NewOrder = typeof orders.$inferInsert;
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type AdminAuthCredential = typeof adminAuthCredentials.$inferSelect;
+export type DiscountCoupon = typeof discountCoupons.$inferSelect;

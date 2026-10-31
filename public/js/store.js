@@ -139,15 +139,83 @@ window.addToCart = function(variantId) {
   updateCartUI();
 };
 
+let appliedCoupon = null;
+
+const couponInput = document.getElementById("coupon-code-input");
+const applyCouponBtn = document.getElementById("apply-coupon-btn");
+const couponMsgEl = document.getElementById("coupon-message");
+const discountRowEl = document.getElementById("discount-row");
+const cartDiscountEl = document.getElementById("cart-discount");
+const cartFinalTotalEl = document.getElementById("cart-final-total");
+
+applyCouponBtn?.addEventListener("click", async () => {
+  const code = couponInput.value.trim();
+  if (!code) return;
+
+  const totalPaise = cart.reduce((sum, item) => sum + (item.unitPricePaise * item.qty), 0);
+  if (totalPaise === 0) {
+    alert("Please add items to your bag first");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/brands/${brandSlug}/coupons/validate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, subtotalPaise: totalPaise })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      appliedCoupon = null;
+      couponMsgEl.style.display = "block";
+      couponMsgEl.style.color = "var(--danger)";
+      couponMsgEl.innerText = data.error || "Invalid coupon";
+    } else {
+      appliedCoupon = data;
+      couponMsgEl.style.display = "block";
+      couponMsgEl.style.color = "var(--success)";
+      couponMsgEl.innerText = `🎉 Coupon '${data.code}' applied! You saved ${formatINR(data.discountPaise)}`;
+    }
+    updateCartUI();
+  } catch (err) {
+    alert("Error applying coupon: " + err.message);
+  }
+});
+
 function updateCartUI() {
   const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
   cartCountEl.innerText = totalCount;
 
-  const totalPaise = cart.reduce((sum, item) => sum + (item.unitPricePaise * item.qty), 0);
-  cartSubtotalEl.innerText = formatINR(totalPaise);
+  const subtotalPaise = cart.reduce((sum, item) => sum + (item.unitPricePaise * item.qty), 0);
+  cartSubtotalEl.innerText = formatINR(subtotalPaise);
+
+  let discountPaise = 0;
+  if (appliedCoupon && subtotalPaise > 0) {
+    if (appliedCoupon.discountType === "PERCENTAGE") {
+      discountPaise = Math.round((subtotalPaise * appliedCoupon.discountValue) / 100);
+    } else {
+      discountPaise = Math.min(appliedCoupon.discountValue, subtotalPaise);
+    }
+  }
+
+  if (discountPaise > 0) {
+    discountRowEl.style.display = "flex";
+    cartDiscountEl.innerText = `-${formatINR(discountPaise)}`;
+  } else {
+    discountRowEl.style.display = "none";
+  }
+
+  const finalTotalPaise = Math.max(0, subtotalPaise - discountPaise);
+  if (cartFinalTotalEl) {
+    cartFinalTotalEl.innerText = formatINR(finalTotalPaise);
+  }
 
   if (cart.length === 0) {
     cartItemsContainer.innerHTML = `<p style="color: #6b7280; text-align: center; padding: 2rem 0;">Your bag is empty.</p>`;
+    appliedCoupon = null;
+    if (couponMsgEl) couponMsgEl.style.display = "none";
+    if (discountRowEl) discountRowEl.style.display = "none";
     return;
   }
 

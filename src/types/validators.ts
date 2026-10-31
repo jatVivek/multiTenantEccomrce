@@ -108,3 +108,17 @@ export const grantBrandAccessSchema = z.object({
   brandId: z.string().uuid(),
 });
 
+// ── Coupons ────────────────────────────────────────────────────────────
+
+export const validateCouponSchema = z.object({
+  code: z.string().min(1).max(50),
+  subtotalPaise: z.number().int().min(0),
+});
+
+export const createCouponSchema = z.object({
+  code: z.string().min(1).max(50),
+  discountType: z.enum(["PERCENTAGE", "FLAT"]),
+  discountValue: z.number().int().min(1),
+  minOrderPaise: z.number().int().min(0).default(0),
+});
+

@@ -6,6 +6,7 @@ import { brandsRouter } from "./brands";
 import { productsRouter } from "./products";
 import { ordersRouter } from "./orders";
 import { bundlesRouter } from "./bundles";
+import { couponsRouter } from "./coupons";
 import { adminRouter } from "./admin";
 import { brandResolver } from "../middleware/brand-resolver";
 import { rateLimiter } from "../middleware/rate-limiter";
@@ -53,6 +54,7 @@ brandScoped.use("*", brandResolver);
 brandScoped.route("/products", productsRouter);
 brandScoped.route("/orders", ordersRouter);
 brandScoped.route("/bundles", bundlesRouter);
+brandScoped.route("/coupons", couponsRouter);
 
 // Support both path-based routing (/api/brands/:slug/...) and domain-based routing (/api/v1/...)
 app.route("/api/brands/:slug", brandScoped);
