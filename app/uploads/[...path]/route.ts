@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 const MIME_MAP: Record<string, string> = {
   ".webp": "image/webp",
   ".png": "image/png",
