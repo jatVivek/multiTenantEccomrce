@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clothing Brand Storefront</title>
+  <link rel="stylesheet" href="/css/store.css">
+</head>
+<body>
+  <header>
+    <div class="container nav-bar">
+      <a href="#" class="brand-logo" id="brand-title">🛍️ Store</a>
+      <div class="nav-actions">
+        <button class="cart-btn" id="open-cart-btn">
+          <span>Cart</span>
+          <span class="cart-count" id="cart-count">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1 id="hero-brand-name">Exclusive Collection</h1>
+      <p id="hero-brand-desc">Explore premium apparel tailored for your lifestyle.</p>
+    </section>
+
+    <!-- Combos & Bundles Section -->
+    <section id="bundles-section" style="display: none; margin-bottom: 2.5rem;">
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+        🎁 Value Combos & Bundles
+      </h2>
+      <div class="product-grid" id="bundles-grid" style="padding-top: 0;">
+        <!-- Bundles populated by JS -->
+      </div>
+    </section>
+
+    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--primary);">
+      All Clothing Items
+    </h2>
+    <div class="product-grid" id="product-grid" style="padding-top: 0.5rem;">
+      <!-- Products populated by JS -->
+    </div>
+  </main>
+
+  <!-- Cart & Checkout Drawer -->
+  <div class="modal-overlay" id="cart-modal">
+    <div class="cart-drawer">
+      <div class="cart-header">
+        <h2>Your Bag</h2>
+        <button class="btn-close" id="close-cart-btn">&times;</button>
+      </div>
+
+      <div class="cart-items" id="cart-items-container">
+        <!-- Cart items rendered here -->
+      </div>
+
+      <div class="cart-summary">
+        <div class="cart-total-row">
+          <span>Subtotal:</span>
+          <span id="cart-subtotal">₹0.00</span>
+        </div>
+
+        <form id="checkout-form">
+          <div class="form-group">
+            <label for="cust-name">Full Name</label>
+            <input type="text" id="cust-name" class="form-control" required placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="cust-phone">WhatsApp / Phone Number</label>
+            <input type="tel" id="cust-phone" class="form-control" required placeholder="9876543210">
+          </div>
+          <div class="form-group">
+            <label for="cust-addr">Delivery Address</label>
+            <input type="text" id="cust-addr" class="form-control" required placeholder="Apartment, Street">
+          </div>
+          <div class="form-group">
+            <label for="cust-city">City</label>
+            <input type="text" id="cust-city" class="form-control" required placeholder="Bengaluru">
+          </div>
+          <div class="form-group">
+            <label for="cust-pincode">Pincode</label>
+            <input type="text" id="cust-pincode" class="form-control" required placeholder="560001">
+          </div>
+          <div class="form-group">
+            <label for="cust-pay">Payment Method</label>
+            <select id="cust-pay" class="form-control">
+              <option value="COD">Cash On Delivery (COD)</option>
+              <option value="UPI">Direct UPI</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn-checkout" id="submit-order-btn">Confirm & Place Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/store.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+[Unit]
+Description=Clothing Setup Multi-Tenant E-Commerce Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=its-vini
+WorkingDirectory=/home/its-vini/Projrects-RUSA/ClothingSetupEcomLightWeighr15kto30k
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+EnvironmentFile=/home/its-vini/Projrects-RUSA/ClothingSetupEcomLightWeighr15kto30k/.env
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=clothing-ecom
+
+[Install]
+WantedBy=multi-user.target
