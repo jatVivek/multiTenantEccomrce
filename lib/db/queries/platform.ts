@@ -806,13 +806,17 @@ export async function getPlatformSetting(
   key: string,
   defaultValue = ""
 ): Promise<string> {
-  const [row] = await db
-    .select({ value: platformSettings.value })
-    .from(platformSettings)
-    .where(eq(platformSettings.key, key))
-    .limit(1);
-
-  return row ? row.value : defaultValue;
+  try {
+    const [row] = await db
+      .select({ value: platformSettings.value })
+      .from(platformSettings)
+      .where(eq(platformSettings.key, key))
+      .limit(1);
+    return row ? row.value : defaultValue;
+  } catch (err) {
+    console.error(`[getPlatformSetting] Failed for key="${key}":`, err);
+    return defaultValue;
+  }
 }
 
 export async function getAllPlatformSettings(): Promise<Record<string, string>> {

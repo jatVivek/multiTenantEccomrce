@@ -55,7 +55,8 @@ export interface FeatureGateResult {
  * base plan, active overrides (checking expiry dates), and top-ups.
  */
 export async function getEffectiveBrandFeatures(brandId: string) {
-  const { subscription, plan } = await getBrandSubscription(brandId);
+  try {
+    const { subscription, plan } = await getBrandSubscription(brandId);
 
   // If no subscription found, assume starter defaults
   const baseFeatures: Record<string, any> = plan?.features || {
@@ -176,6 +177,11 @@ export async function getEffectiveBrandFeatures(brandId: string) {
     limits,
     warnings,
   };
+  } catch (err) {
+    console.error("[getEffectiveBrandFeatures] DB error:", err);
+    // Return a safe default so the layout still renders
+    return null;
+  }
 }
 
 /**

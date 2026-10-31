@@ -12,7 +12,8 @@ interface HomePageProps {
   params: Promise<{ brand_slug: string }>;
 }
 
-export async function generateMetadata({ params }: HomePageProps) {
+export const dynamic = "force-dynamic";
+
   const { brand_slug } = await params;
   const brand = await getBrandBySlug(brand_slug);
   if (!brand) return { title: "Brand Not Found" };

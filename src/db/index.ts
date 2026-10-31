@@ -3,9 +3,16 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
-const databaseUrl =
-  process.env.DATABASE_URL ||
-  "postgres://postgres:postgres@127.0.0.1:5432/clothing_setup";
+let databaseUrl: string;
+if (process.env.DATABASE_URL) {
+  databaseUrl = process.env.DATABASE_URL;
+} else if (process.env.NODE_ENV === "development") {
+  // Local development fallback
+  databaseUrl = "postgres://postgres:postgres@127.0.0.1:5432/clothing_setup";
+} else {
+  // In production the DB URL must be set.
+  throw new Error("DATABASE_URL is required in production. Configure it in Vercel environment variables.");
+}
 
 let pool: Pool;
 try {

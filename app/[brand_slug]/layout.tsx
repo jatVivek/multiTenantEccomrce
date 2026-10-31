@@ -36,14 +36,25 @@ export default async function BrandLayout({
 
   const themeConfig = (brand.themeConfig as Partial<BrandThemeConfig>) || {};
 
-  const [platformFooterText, effectiveFeatures, currentCustomer] = await Promise.all([
-    getPlatformSetting(
-      "footer_badge_text",
-      "Multi-tenant architecture powered by Antigravity."
-    ),
-    getEffectiveBrandFeatures(brand.id),
-    getCurrentCustomer(brand.id),
-  ]);
+  // Wrap secondary DB calls in try/catch so a partial DB failure
+  // never crashes the whole layout — fall back to safe defaults.
+  let platformFooterText = "Multi-tenant architecture powered by Antigravity.";
+  let effectiveFeatures: Awaited<ReturnType<typeof getEffectiveBrandFeatures>> | null = null;
+  let currentCustomer: Awaited<ReturnType<typeof getCurrentCustomer>> = null;
+
+  try {
+    [platformFooterText, effectiveFeatures, currentCustomer] = await Promise.all([
+      getPlatformSetting(
+        "footer_badge_text",
+        "Multi-tenant architecture powered by Antigravity."
+      ),
+      getEffectiveBrandFeatures(brand.id),
+      getCurrentCustomer(brand.id),
+    ]);
+  } catch (err) {
+    console.error("[BrandLayout] Secondary DB queries failed:", err);
+    // Silently continue with defaults — the page will still render
+  }
 
   const removePoweredBy = Boolean(effectiveFeatures?.effective?.remove_powered_by);
 

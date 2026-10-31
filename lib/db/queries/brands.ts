@@ -42,24 +42,32 @@ export interface BrandThemeConfig {
 
 export async function getBrandBySlug(slug: string) {
   if (!slug) return null;
-  const [brand] = await db
-    .select()
-    .from(brands)
-    .where(and(eq(brands.slug, slug), eq(brands.isActive, true)))
-    .limit(1);
-
-  return brand ?? null;
+  try {
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.slug, slug), eq(brands.isActive, true)))
+      .limit(1);
+    return brand ?? null;
+  } catch (err) {
+    console.error('Failed to fetch brand by slug:', err);
+    return null;
+  }
 }
 
 export async function getBrandById(id: string) {
   if (!id) return null;
-  const [brand] = await db
-    .select()
-    .from(brands)
-    .where(and(eq(brands.id, id), eq(brands.isActive, true)))
-    .limit(1);
-
-  return brand ?? null;
+  try {
+    const [brand] = await db
+      .select()
+      .from(brands)
+      .where(and(eq(brands.id, id), eq(brands.isActive, true)))
+      .limit(1);
+    return brand ?? null;
+  } catch (err) {
+    console.error('Failed to fetch brand by id:', err);
+    return null;
+  }
 }
 
 export async function getAllActiveBrands() {

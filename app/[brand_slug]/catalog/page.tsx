@@ -1,15 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { getBrandBySlug } from "@/lib/db/queries/brands";
 import { getCatalogProducts, getCategories } from "@/lib/db/queries/products";
 import { CatalogFilterBar } from "@/components/storefront/CatalogFilterBar";
 import { CategoryPills } from "@/components/storefront/CategoryPills";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { LoadMoreProducts } from "@/components/storefront/LoadMoreProducts";
-import { PackageOpen, RotateCcw } from "lucide-react";
+import { PackageOpen, RotateCcw, SlidersHorizontal } from "lucide-react";
 
-// ISR with 60 second revalidation
-export const revalidate = 60;
+// Force dynamic so we never statically pre-render (avoids DB at build time)
+export const dynamic = "force-dynamic";
 
 interface CatalogPageProps {
   params: Promise<{ brand_slug: string }>;
@@ -107,15 +108,30 @@ export default async function CatalogPage({
         </div>
       </div>
 
-      {/* Sticky Quick-Filter Bar */}
-      <CatalogFilterBar
-        currentCategory={category}
-        currentSize={size}
-        currentPriceRange={priceRange}
-        currentInStock={inStockOnly}
-        currentSort={sort}
-        currentSearch={search}
-      />
+      {/* Sticky Quick-Filter Bar — wrapped in Suspense because CatalogFilterBar uses useSearchParams() */}
+      <Suspense
+        fallback={
+          <div className="w-full bg-brand-surface border-b border-brand-border py-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-4">
+              <div className="h-11 flex-1 max-w-md bg-brand-secondary rounded-lg animate-pulse" />
+              <div className="h-11 w-36 bg-brand-secondary rounded-lg animate-pulse" />
+              <div className="ml-auto flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-brand-muted animate-pulse" />
+                <div className="h-4 w-16 bg-brand-secondary rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        }
+      >
+        <CatalogFilterBar
+          currentCategory={category}
+          currentSize={size}
+          currentPriceRange={priceRange}
+          currentInStock={inStockOnly}
+          currentSort={sort}
+          currentSearch={search}
+        />
+      </Suspense>
 
       {/* Products Grid or Empty State */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-grow w-full">
