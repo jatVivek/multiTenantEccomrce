@@ -128,7 +128,8 @@
     <aside class="sidebar">
       <h2>Clothing Admin</h2>
       <ul class="admin-nav">
-        <li><a href="#" class="active">Overview</a></li>
+        <li><a href="#" class="active" id="nav-overview" onclick="showTab('overview')">Overview</a></li>
+        <li><a href="#" id="nav-products" onclick="showTab('products')">Product Catalog</a></li>
         <li><a href="#" onclick="logout()">Sign Out</a></li>
       </ul>
       <div style="margin-top: 3rem; font-size: 0.8rem; color: #9ca3af;">
@@ -137,57 +138,118 @@
     </aside>
 
     <main class="main-content">
-      <h1 style="margin-bottom: 1.5rem;">Dashboard Overview</h1>
+      <!-- Overview Tab -->
+      <div id="tab-overview">
+        <h1 style="margin-bottom: 1.5rem;">Dashboard Overview</h1>
 
-      <div class="stat-cards">
-        <div class="stat-card">
-          <h3>Total Platform Orders</h3>
-          <div class="value" id="stat-total-orders">-</div>
+        <div class="stat-cards">
+          <div class="stat-card">
+            <h3>Total Platform Orders</h3>
+            <div class="value" id="stat-total-orders">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="value" id="stat-total-rev">-</div>
+          </div>
+          <div class="stat-card">
+            <h3>Accessible Brands</h3>
+            <div class="value" id="stat-brand-count">-</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <h3>Total Revenue</h3>
-          <div class="value" id="stat-total-rev">-</div>
+
+        <h2 style="margin-bottom: 1rem;">Managed Brands</h2>
+        <div class="table-container" style="margin-bottom: 2.5rem;">
+          <table>
+            <thead>
+              <tr>
+                <th>Brand Name</th>
+                <th>Slug</th>
+                <th>Storefront Link</th>
+              </tr>
+            </thead>
+            <tbody id="brands-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
         </div>
-        <div class="stat-card">
-          <h3>Accessible Brands</h3>
-          <div class="value" id="stat-brand-count">-</div>
+
+        <h2 style="margin-bottom: 1rem;">Recent Orders & Fulfillment</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Brand</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Courier / Tracking</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <!-- Orders populated by JS -->
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <h2 style="margin-bottom: 1rem;">Managed Brands</h2>
-      <div class="table-container" style="margin-bottom: 2.5rem;">
-        <table>
-          <thead>
-            <tr>
-              <th>Brand Name</th>
-              <th>Slug</th>
-              <th>Storefront Link</th>
-            </tr>
-          </thead>
-          <tbody id="brands-table-body">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
-      </div>
+      <!-- Products Management Tab -->
+      <div id="tab-products" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h1>Product Catalog</h1>
+          <div>
+            <label style="font-weight: 500; margin-right: 0.5rem;">Brand:</label>
+            <select id="product-brand-selector" class="form-control" style="width: auto; display: inline-block;">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+        </div>
 
-      <h2 style="margin-bottom: 1rem;">Recent Orders & Fulfillment</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Order #</th>
-              <th>Brand</th>
-              <th>Customer</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Courier / Tracking</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="orders-table-body">
-            <!-- Orders populated by JS -->
-          </tbody>
-        </table>
+        <!-- Add Product Box -->
+        <div class="stat-card" style="margin-bottom: 2rem;">
+          <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1rem;">➕ Add New Apparel / Variant</h3>
+          <form id="create-product-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Product Title</label>
+              <input type="text" id="new-prod-title" class="form-control" required placeholder="e.g. Slim-Fit Linen Shirt">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>SKU</label>
+              <input type="text" id="new-prod-sku" class="form-control" required placeholder="e.g. LINEN-SHIRT-M">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Price (₹ INR)</label>
+              <input type="number" id="new-prod-price" class="form-control" step="1" min="1" required placeholder="e.g. 999">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Initial Stock Units</label>
+              <input type="number" id="new-prod-stock" class="form-control" min="0" required placeholder="e.g. 50">
+            </div>
+            <div>
+              <button type="submit" class="btn-checkout" style="background: var(--accent); height: 42px;">Save Product</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Products Table -->
+        <h2 style="margin-bottom: 1rem;">Live Items in Store</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th>In Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-table-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
   </div>

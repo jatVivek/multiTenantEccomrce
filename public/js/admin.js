@@ -124,11 +124,29 @@ async function loadDashboardStats() {
   }
 }
 
+let currentBrands = [];
+
+window.showTab = function(tabName) {
+  document.getElementById("tab-overview").style.display = tabName === "overview" ? "block" : "none";
+  document.getElementById("tab-products").style.display = tabName === "products" ? "block" : "none";
+
+  document.getElementById("nav-overview").classList.toggle("active", tabName === "overview");
+  document.getElementById("nav-products").classList.toggle("active", tabName === "products");
+
+  if (tabName === "products") {
+    loadBrandProducts();
+  }
+};
+
 function loadBrands(brands) {
+  currentBrands = brands;
   document.getElementById("stat-brand-count").innerText = brands.length;
   const tbody = document.getElementById("brands-table-body");
+  const brandSelector = document.getElementById("product-brand-selector");
+
   if (brands.length === 0) {
     tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #6b7280;">No brand access granted.</td></tr>`;
+    if (brandSelector) brandSelector.innerHTML = `<option value="">No brands available</option>`;
     return;
   }
 
@@ -139,7 +157,132 @@ function loadBrands(brands) {
       <td><a href="/store/${b.slug}" target="_blank" style="color: var(--accent); font-weight: 500;">Open Customer Store ↗</a></td>
     </tr>
   `).join("");
+
+  if (brandSelector) {
+    brandSelector.innerHTML = brands.map(b => `<option value="${b.slug}">${b.name} (${b.slug})</option>`).join("");
+    brandSelector.onchange = () => loadBrandProducts();
+  }
 }
+
+async function loadBrandProducts() {
+  const brandSelector = document.getElementById("product-brand-selector");
+  const slug = brandSelector?.value;
+  const tbody = document.getElementById("catalog-table-body");
+  if (!slug || !tbody) return;
+
+  try {
+    const res = await fetch(`/api/brands/${slug}/products`);
+    if (!res.ok) throw new Error("Could not load products");
+    const products = await res.json();
+
+    if (products.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #6b7280;">No items found in this brand's catalog.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = products.map(p => `
+      <tr>
+        <td><strong>${p.title}</strong></td>
+        <td><code>${p.sku}</code></td>
+        <td><strong>${formatINR(p.pricePaise)}</strong></td>
+        <td>
+          <span style="font-weight: 600; color: ${p.stockQuantity > 5 ? 'var(--success)' : 'var(--danger)'};">
+            ${p.stockQuantity} units
+          </span>
+        </td>
+        <td>
+          <button class="btn-add" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #4b5563;" onclick="quickUpdateStock('${slug}', '${p.id}', ${p.stockQuantity})">Edit Stock</button>
+          <button class="btn-add" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: var(--danger); margin-left: 0.25rem;" onclick="deleteProduct('${slug}', '${p.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="color: red; text-align: center;">Error: ${err.message}</td></tr>`;
+  }
+}
+
+// Create new product form handler
+const createProductForm = document.getElementById("create-product-form");
+createProductForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const slug = document.getElementById("product-brand-selector").value;
+  if (!slug) {
+    alert("Please select a brand first");
+    return;
+  }
+
+  const title = document.getElementById("new-prod-title").value.trim();
+  const sku = document.getElementById("new-prod-sku").value.trim();
+  const priceRs = parseFloat(document.getElementById("new-prod-price").value);
+  const stock = parseInt(document.getElementById("new-prod-stock").value, 10);
+
+  // Find brand id for product_id placeholder
+  const activeBrand = currentBrands.find(b => b.slug === slug);
+  const productId = activeBrand?.id || crypto.randomUUID();
+
+  try {
+    const res = await fetch(`/api/brands/${slug}/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId,
+        sku,
+        title,
+        pricePaise: Math.round(priceRs * 100),
+        stockQuantity: stock,
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.formErrors?.[0] || "Failed to create product");
+    }
+
+    alert(`✅ Product "${title}" created and published to store!`);
+    createProductForm.reset();
+    loadBrandProducts();
+  } catch (err) {
+    alert("Error creating product: " + err.message);
+  }
+});
+
+window.quickUpdateStock = async function(slug, variantId, currentStock) {
+  const newStockStr = prompt("Enter updated stock quantity:", String(currentStock));
+  if (newStockStr === null) return;
+  const newStock = parseInt(newStockStr, 10);
+  if (isNaN(newStock) || newStock < 0) {
+    alert("Please enter a valid non-negative integer");
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/brands/${slug}/products/${variantId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stockQuantity: newStock })
+    });
+
+    if (!res.ok) throw new Error("Update failed");
+    loadBrandProducts();
+  } catch (err) {
+    alert("Error updating stock: " + err.message);
+  }
+};
+
+window.deleteProduct = async function(slug, variantId) {
+  if (!confirm("Are you sure you want to remove this product from the storefront?")) return;
+
+  try {
+    const res = await fetch(`/api/brands/${slug}/products/${variantId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Delete failed");
+    loadBrandProducts();
+  } catch (err) {
+    alert("Error deleting product: " + err.message);
+  }
+};
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
